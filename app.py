@@ -36,6 +36,19 @@ dhtDevice = adafruit_dht.DHT11(board.D27)
 
 i2c = busio.I2C(board.SCL, board.SDA)
 ccs811 = adafruit_ccs811.CCS811(i2c)
+"""dictionary for the relays that have the first value for power 
+and the second value is if the power is overrided by the user
+default is False"""
+relays = {
+    'relay1': [False, relay1, 'automate'],
+    'relay2': [False, relay2, 'automate'],
+    'relay3': [False, relay3, 'automate'],
+    'relay4': [False, relay4, 'automate'],
+    'relay5': [False, relay5, 'automate'],
+    'relay6': [False, relay6, 'automate'],
+    'relay7': [False, relay7, 'automate'],
+    'relay8': [False, relay8, 'automate']
+}
 
 @app.route('/')
 def index():
@@ -59,38 +72,94 @@ def update_client_sensor_data():
             continue
 
 @socketio.on('test')
-def test():
+def relay_board_init():
     """Testing to see see if connect on the client end can run two seperate functions on connect"""
     print("While loop is initiating")
     while True:
         try:
             humidity = dhtDevice.humidity
+            temp_c = dhtDevice.temperature
             print("Humidity: ", humidity)
-            if humidity < 80:
+            if humidity < 80 and relays['relay1'][2] != 'override' and relays['relay2'][2] != 'override' and relays['relay3'][2] != 'override':
+                """Turn on the humidifier: two ultrasonic mist makers, one computer fan"""
                 print("Humidity is below 80")
                 relay1.on()
-                emit('power', {'message': 'Relay 1 is on'})
-            elif humidity > 90:
+                relay2.on()
+                relay3.on()
+                relays['relay1'][0] = True
+                relays['relay2'][0] = True
+                relays['relay3'][0] = True
+            elif humidity > 90 and relays['relay1'][2] != 'override' and relays['relay2'][2] != 'override' and relays['relay3'][2] != 'override':
+                """Turn off the humidifier"""
                 print("Humidity is above 90")
                 relay1.off()
-                emit('power', {'message': 'Relay 1 is off'})
-        except:
+                relay2.off()
+                relay3.off()
+                relays['relay1'][0] = False
+                relays['relay2'][0] = False
+                relays['relay3'][0] = False
+            if temp_c < 24 and relays['relay4'][2] != 'override':
+                """Turn on the space heater to keep temperature around 24 to 27 celsius"""
+                print("Temperature >>> ", temp_c)
+                relay4.on()
+                relays['relay4'][0] = True
+            elif temp_c > 27 and relays['relay4'][2] != 'override':
+                relay4.off()
+                relays['relay4'][0] = False
+            if ccs811.eco2 > 5000 and ccs811.ec02 < 33000 and relays['relay5'][2] != 'override' and relays['relay6'][2] != 'override' and relays['relay7'][2] != 'override':
+                """Turn on air exchange system: two duct fans, one clip fan"""
+                print("co2 is more than 5000")
+                relay5.on()
+                relay6.on()
+                relay7.on()
+                relays['relay5'][0] = True
+                relays['relay6'][0] = True
+                relays['relay7'][0] = True
+            elif ccs811.eco2 < 5000 and relays['relay5'][2] != 'override' and relays['relay6'][2] != 'override' and relays['relay7'][2] != 'override':
+                relay5.off()
+                relay6.off()
+                relay7.off()
+                relays['relay5'][0] = False
+                relays['relay6'][0] = False
+                relays['relay7'][0] = False
+            """Give a serializeable JSON object to pass to the client.
+            Since there is a function referenced in the relay dict
+            it cannot be serialized"""
+            data = {}
+            for item in relays.items():
+                data[item[0]] = [item[1][0], item[1][2]]
+            emit('power', {'relays': data})
+            
+        except Exception as e:
+            print(e)
             continue
         socketio.sleep(2)
 
-@socketio.on('my event')
-def test_message(message):
-    emit('my response', {'data': message['data']})
 
+@socketio.on('power override')
+def override_on_off(relay):
+    """Override function is called when the user presses the on/off button on the client
+    next(iter(relay)) is a function to retrieve the first item of the dictionary
+    and there is one item received from client."""
+    print('Data received: ', next(iter(relay)))
+    data = next(iter(relay))
+    value = relay[data]
+    if value == True:
+        relays[data][0] = True
+        relays[data][1].on()
+    else:
+        relays[data][0] = False
+        relays[data][1].off()
+    relays[data][2] = 'override'
 
-@socketio.on('my broadcast event')
-def test_message(message):
-    emit('my response', {'data': message['data']}, broadcast=True)
-
-
-@socketio.on('disconnect')
-def test_disconnect():
-    print('Client disconnected.')
+@socketio.on('power automate')
+def override_on_off(relay):
+    """Set the system back to automated"""
+    print('Data received: ', next(iter(relay)))
+    data = next(iter(relay))
+    value = relay[data]
+    relays[data][2] = value
+        
 
 if __name__ == '__main__':
     try:
