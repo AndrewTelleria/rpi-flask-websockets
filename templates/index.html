@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="/static/index.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.2/socket.io.js" integrity="sha512-YybopSVjZU0fe8TY4YDuQbP5bhwpGBE/T6eBUEZ0usM72IWBfWrgVI13qfX4V2A/W7Hdqnm7PIOYOwP9YHnICw==" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="/static/index.js"></script>
+  <title>Mycological Grow Tent</title>
+</head>
+<body>
+<h1>Live Sensor Data</h1>
+<h2>Temperature F: <span id="temp_f">f</span></h2>
+<h2>Temperature C: <span id="temp_c">c</span></h2>
+<h2>Humidity: <span id="humidity"></span>%</h2>
+<h2>Co2: <span id="co2"></span> PPM</h2>
+<h1>Power</h1>
+<h2>Relay Statuses: </h2>
+<ul>
+  <li><h1>Humidity</h1></li>
+  <li>Relay 3: <span id="relay3"></span>
+  <button id="relay3-on">On</button>
+	<button id="relay3-off">Off</button>
+	<button id="relay3-automate">Automate</button>
+  </li>
+  <li><h1>Air Exchange</h1></li>
+  <li>Relay 4: <span id="relay4"></span>
+  <button id="relay4-on">On</button>
+	<button id="relay4-off">Off</button>
+	<button id="relay4-automate">Automate</button>
+  </li>
+  <li><h1>Heat</h1></h1></li>
+  <li>Relay 5: <span id="relay5"></span>
+  <button id="relay5-on">On</button>
+	<button id="relay5-off">Off</button>
+	<button id="relay5-automate">Automate</button>
+  </li>
+  <li><h1>Not Assigned</h1></li>
+  <li>Relay 1: <span id="relay1"></span>
+	<button id="relay1-on">On</button>
+	<button id="relay1-off">Off</button>
+	<button id="relay1-automate">Automate</button>
+  <li>Relay 2: <span id="relay2"></span>
+  <button id="relay2-on">On</button>
+      <button id="relay2-off">Off</button>
+      <button id="relay2-automate">Automate</button>
+  </li>
+  <li>Relay 6: <span id="relay6"></span>
+  <button id="relay6-on">On</button>
+	<button id="relay6-off">Off</button>
+	<button id="relay6-automate">Automate</button>
+  </li>
+  <li>Relay 7: <span id="relay7"></span>
+  <button id="relay7-on">On</button>
+	<button id="relay7-off">Off</button>
+	<button id="relay7-automate">Automate</button>
+  </li>
+  <li>Relay 8: <span id="relay8"></span>
+  <button id="relay8-on">On</button>
+	<button id="relay8-off">Off</button>
+	<button id="relay8-automate">Automate</button>
+  </li>
+</ul>
+</body>
+
+
+</html>
