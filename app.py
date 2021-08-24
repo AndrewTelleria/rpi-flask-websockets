@@ -3,9 +3,15 @@ from flask_socketio import SocketIO, emit
 import time
 import sys
 import board
+<<<<<<< HEAD
 import busio
 import adafruit_scd30
 import math
+=======
+import adafruit_dht
+import busio
+import adafruit_ccs811
+>>>>>>> 27005d638ccc920503c10fc905f132643804609f
 
 import gpiozero
 
@@ -31,10 +37,18 @@ relay6 = gpiozero.OutputDevice(RELAY_6, initial_value=False)
 relay7 = gpiozero.OutputDevice(RELAY_7, initial_value=False)
 relay8 = gpiozero.OutputDevice(RELAY_8, initial_value=False)
 
+<<<<<<< HEAD
 # SCD-30 has tempremental I2C with clock stretching, datasheet recommends
 # starting at 50KHz
 i2c = busio.I2C(board.SCL, board.SDA, frequency=50000)
 scd = adafruit_scd30.SCD30(i2c)
+=======
+# Initial the dht device, with data pin connected to:
+dhtDevice = adafruit_dht.DHT11(board.D27)
+
+i2c = busio.I2C(board.SCL, board.SDA)
+ccs811 = adafruit_ccs811.CCS811(i2c)
+>>>>>>> 27005d638ccc920503c10fc905f132643804609f
 """dictionary for the relays that have the first value for power 
 and the second value is if the power is overrided by the user
 default is False"""
@@ -120,7 +134,7 @@ def relay_board_init():
                 for item in relays.items():
                     data[item[0]] = [item[1][0], item[1][2]]
                 emit('power', {'relays': data})
-            
+
         except Exception as e:
             print(e)
             continue
