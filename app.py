@@ -1,5 +1,6 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
+from timer import Timer
 import time
 import sys
 import board
@@ -12,6 +13,8 @@ import gpiozero
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
+timer = Timer()
+timer.start()
 
 RELAY_1 = 5
 RELAY_2 = 6
@@ -82,6 +85,11 @@ def relay_board_init():
     while True:
         try:
             data = scd.data_available
+            elapsedTime = timer.checkElapsedTime()
+            print('Elapsed Time', elapsedTime)
+            if elapsedTime == 300 and timer._start_fans == False:
+                timer.stop()
+                
             if data:
                 humidity = scd.relative_humidity
                 temp_c = scd.temperature
