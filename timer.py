@@ -6,6 +6,7 @@ class TimeError(Exception):
 class Timer:
     def __init__(self):
         self._start_time = None
+        self._start_fans = None
         
     
     def start(self):
@@ -24,6 +25,23 @@ class Timer:
         elapsed_time = time.perf_counter() - self._start_time
         self._start_time = None
         print(f"Elapsed time: {elapsed_time:0.4f} seconds")
+
+    def startFan(self):
+        """Start the fans"""
+        if self._start_fans is not None:
+            raise TimeError(f"Timer is running. User .stopFan() to stop the fans")
+        
+        self._start_time = time.perf_counter()
+        self._start_fans = True
+        print(self._start_time)
+    
+    def stopFan(self):
+        """Stop the fans"""
+        if self._start_fans is not None:
+            raise TimeError(f"Timer is running. User .stopFan() to stop the fans")
+        
+        self._start_time = None
+        self._start_fans = False
     
     def checkElapsedTime(self):
         """Checks to see how much time has elapsed."""
