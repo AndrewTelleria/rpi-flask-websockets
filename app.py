@@ -14,6 +14,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 socketio = SocketIO(app)
 timer = Timer()
+timer.start()
 
 RELAY_1 = 5
 RELAY_2 = 6
@@ -82,7 +83,12 @@ def relay_board_init():
     print("While loop is initiating")
     while True:
         try:
-            timer.start()
+            if timer.checkElapsedTime() >= 10 and timer._start_fans == False:
+                timer.startFan()
+        # Check to see if the fans are on and have been running for a minute a more
+            elif timer.checkElapsedTime() >= 5 and timer._start_fans == True:
+                timer.stopFan()
+                timer.start()
             data = scd.data_available
             if data:
                 elapsedTime = timer.checkElapsedTime()
