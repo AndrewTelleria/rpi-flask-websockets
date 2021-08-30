@@ -84,12 +84,21 @@ def relay_board_init():
     print("While loop is initiating")
     while True:
         try:
-            data = scd.data_available
             elapsedTime = timer.checkElapsedTime()
-            print('Elapsed Time', elapsedTime)
-            if elapsedTime == 300 and timer._start_fans == False:
-                timer.stop()
-                
+            print('Time: {}, Start fans: {}'.format(elapsedTime, timer._start_fans))
+            if elapsedTime >= 300 and timer._start_fans == False and relays['relay4'][2] != 'override':
+                print('Start fans')
+                timer.startFan()
+                relay4.on()
+                relays['relay4'][0] = True
+        # Check to see if the fans are on and have been running for a minute a more
+            elif elapsedTime >= 45 and timer._start_fans == True and relays['relay4'][2] != 'override':
+                print('Stop fans')
+                timer.stopFan()
+                relay4.off()
+                relays['relay4'][0] = False
+                timer.start()
+            data = scd.data_available
             if data:
                 humidity = scd.relative_humidity
                 temp_c = scd.temperature
@@ -98,12 +107,12 @@ def relay_board_init():
                 
                 if humidity < 95 and relays['relay3'][2] != 'override':
                     """Turn on the humidifier: two ultrasonic mist makers, one computer fan"""
-                    print("Humidity is below 80")
+                    print("Humidity is below 95")
                     relay3.on()
                     relays['relay3'][0] = True
                 elif humidity > 99 and relays['relay3'][2] != 'override':
                     """Turn off the humidifier"""
-                    print("Humidity is above 90")
+                    print("Humidity is at 100")
                     relay3.off()
                     relays['relay3'][0] = False
                 if temp_c < 24 and relays['relay5'][2] != 'override':
@@ -114,14 +123,6 @@ def relay_board_init():
                 elif temp_c > 27 and relays['relay5'][2] != 'override':
                     relay5.off()
                     relays['relay5'][0] = False
-                if co2 > 5000 and relays['relay4'][2] != 'override':
-                    """Turn on air exchange system: two duct fans, one clip fan"""
-                    print("co2 is more than 5000")
-                    relay4.on()
-                    relays['relay4'][0] = True
-                elif co2 < 5000 and relays['relay4'][2] != 'override':
-                    relay4.off()
-                    relays['relay4'][0] = False
                 """Give a serializeable JSON object to pass to the client.
                 Since there is a function referenced in the relay dict
                 it cannot be serialized"""
