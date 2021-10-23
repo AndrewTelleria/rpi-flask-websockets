@@ -16,23 +16,23 @@ socketio = SocketIO(app)
 timer = Timer()
 timer.start()
 
-RELAY_1 = 5
-RELAY_2 = 6
-RELAY_3 = 13
-RELAY_4 = 16
-RELAY_5 = 19
-RELAY_6 = 20
-RELAY_7 = 21
-RELAY_8 = 26
+RELAY_1 = 14
+RELAY_2 = 15
+RELAY_3 = 18
+RELAY_4 = 23
+RELAY_5 = 17
+RELAY_6 = 27
+RELAY_7 = 22
+RELAY_8 = 24
 
-relay1 = gpiozero.OutputDevice(RELAY_1, initial_value=False)
-relay2 = gpiozero.OutputDevice(RELAY_2, initial_value=False)
-relay3 = gpiozero.OutputDevice(RELAY_3, initial_value=False)
-relay4 = gpiozero.OutputDevice(RELAY_4, initial_value=False)
-relay5 = gpiozero.OutputDevice(RELAY_5, initial_value=False)
-relay6 = gpiozero.OutputDevice(RELAY_6, initial_value=False)
-relay7 = gpiozero.OutputDevice(RELAY_7, initial_value=False)
-relay8 = gpiozero.OutputDevice(RELAY_8, initial_value=False)
+relay1 = gpiozero.OutputDevice(RELAY_1, active_high=False, initial_value=False)
+relay2 = gpiozero.OutputDevice(RELAY_2, active_high=False, initial_value=False)
+relay3 = gpiozero.OutputDevice(RELAY_3, active_high=False, initial_value=False)
+relay4 = gpiozero.OutputDevice(RELAY_4, active_high=False, initial_value=False)
+relay5 = gpiozero.OutputDevice(RELAY_5, active_high=False, initial_value=False)
+relay6 = gpiozero.OutputDevice(RELAY_6, active_high=False, initial_value=False)
+relay7 = gpiozero.OutputDevice(RELAY_7, active_high=False, initial_value=False)
+relay8 = gpiozero.OutputDevice(RELAY_8, active_high=False, initial_value=False)
 
 # SCD-30 has tempremental I2C with clock stretching, datasheet recommends
 # starting at 50KHz
@@ -64,13 +64,13 @@ def update_client_sensor_data():
     while True:
         data = scd.data_available
         if data:
-            humidity = scd.relative_humidity
-            temp = scd.temperature
-            co2 = scd.CO2
+            humidity = round(scd.relative_humidity, 2)
+            temp = round(scd.temperature, 2)
+            co2 = round(scd.CO2, 2)
             try:
                 emit('environment', {'data': 'HELLO',
                             'temperature_c': temp,
-                            'temperature_f': temp * (9 / 5) + 32,
+                            'temperature_f': round(temp * (9 / 5) + 32, 2),
                             'humidity': humidity,
                             'co2': co2,
                             })
@@ -85,24 +85,24 @@ def relay_board_init():
     while True:
         try:
             elapsedTime = timer.checkElapsedTime()
-            print('Time: {}, Start fans: {}'.format(elapsedTime, timer._start_fans))
-            if elapsedTime >= 300 and timer._start_fans == False and relays['relay4'][2] != 'override':
+            print('Time: {}, Start fans: {}'.format(round(elapsedTime, 2), timer._start_fans))
+            if elapsedTime >= 300 and timer._start_fans == False and relays['relay5'][2] != 'override':
                 print('Start fans')
                 timer.startFan()
-                relay4.on()
-                relays['relay4'][0] = True
+                relay5.on()
+                relays['relay5'][0] = True
         # Check to see if the fans are on and have been running for a minute a more
-            elif elapsedTime >= 45 and timer._start_fans == True and relays['relay4'][2] != 'override':
+            elif elapsedTime >= 45 and timer._start_fans == True and relays['relay5'][2] != 'override':
                 print('Stop fans')
                 timer.stopFan()
-                relay4.off()
-                relays['relay4'][0] = False
+                relay5.off()
+                relays['relay5'][0] = False
                 timer.start()
             data = scd.data_available
             if data:
-                humidity = scd.relative_humidity
-                temp_c = scd.temperature
-                co2 = scd.CO2
+                humidity = round(scd.relative_humidity, 2)
+                temp_c = round(scd.temperature, 2)
+                co2 = round(scd.CO2, 2)
                 print("Humidity: ", humidity)
                 
                 if humidity < 95 and relays['relay3'][2] != 'override':
@@ -115,14 +115,15 @@ def relay_board_init():
                     print("Humidity is at 100")
                     relay3.off()
                     relays['relay3'][0] = False
-                if temp_c < 24 and relays['relay5'][2] != 'override':
+                if temp_c < 26 and relays['relay2'][2] != 'override':
                     """Turn on the space heater to keep temperature around 24 to 27 celsius"""
-                    print("Temperature >>> ", temp_c)
-                    relay5.on()
-                    relays['relay5'][0] = True
-                elif temp_c > 27 and relays['relay5'][2] != 'override':
-                    relay5.off()
-                    relays['relay5'][0] = False
+                    print("Temperature < 26", temp_c)
+                    relay2.on()
+                    relays['relay2'][0] = True
+                elif temp_c > 30 and relays['relay2'][2] != 'override':
+                    print("Temperature > 30", temp_c)
+                    relay2.off()
+                    relays['relay2'][0] = False
                 """Give a serializeable JSON object to pass to the client.
                 Since there is a function referenced in the relay dict
                 it cannot be serialized"""

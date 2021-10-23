@@ -14,7 +14,7 @@ class Timer:
         if self._start_time is not None:
             raise TimeError(f"Timer is running. User .stop() to stop it")
         
-        self._start_time = time.perf_counter()
+        self._start_time = round(time.perf_counter(), 2)
         print('Start time', self._start_time)
     
     def stop(self):
@@ -46,4 +46,4 @@ class Timer:
         if self._start_time is None:
             raise TimeError(f"Timer is not running. Use .start() to start it")
         
-        return time.perf_counter() - self._start_time
+        return round(time.perf_counter(), 2) - round(self._start_time, 2)
